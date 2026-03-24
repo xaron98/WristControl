@@ -49,7 +49,9 @@ class MacConnectionManager: ObservableObject {
         }
 
         browser?.stateUpdateHandler = { state in
+            #if DEBUG
             print("[WristControl] Browser state: \(state)")
+            #endif
         }
 
         browser?.start(queue: .main)
@@ -140,11 +142,15 @@ class MacConnectionManager: ObservableObject {
 
             connection.send(content: lengthData + data, completion: .contentProcessed { error in
                 if let error = error {
+                    #if DEBUG
                     print("[WristControl] Error sending to Mac: \(error.localizedDescription)")
+                    #endif
                 }
             })
         } catch {
+            #if DEBUG
             print("[WristControl] Error encoding command: \(error)")
+            #endif
         }
     }
 
@@ -178,6 +184,6 @@ class MacConnectionManager: ObservableObject {
     }
 
     private func requestCurrentStatus() {
-        send(command: ControlCommand(type: .brightness, value: -1))
+        send(command: ControlCommand(type: .statusRequest, value: 0))
     }
 }

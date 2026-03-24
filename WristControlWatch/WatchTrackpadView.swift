@@ -8,6 +8,8 @@ struct WatchTrackpadView: View {
     @State private var scrollValue: Double = 0.0
     @State private var lastScrollValue: Double = 0.0
     @State private var lastDragLocation: CGPoint? = nil
+    @State private var lastSendTime: Date = .distantPast
+    private let throttleInterval: TimeInterval = 0.03  // ~30fps max for WatchConnectivity
 
     var body: some View {
         GeometryReader { geometry in
@@ -23,6 +25,12 @@ struct WatchTrackpadView: View {
                                     let dx = accelerate(rawDX)
                                     let dy = accelerate(rawDY)
                                     if abs(dx) > 0.01 || abs(dy) > 0.01 {
+                                        let now = Date()
+                                        guard now.timeIntervalSince(lastSendTime) >= throttleInterval else {
+                                            lastDragLocation = value.location
+                                            return
+                                        }
+                                        lastSendTime = now
                                         let command = ControlCommand(type: .mouseMove, deltaX: dx, deltaY: dy)
                                         WatchSessionManager.shared.send(command: command)
                                     }
@@ -51,7 +59,7 @@ struct WatchTrackpadView: View {
                     Text("Arrastra · Tap = click")
                         .font(.system(size: 9))
                         .foregroundColor(.white.opacity(0.2))
-                    Text("Crown = scroll")
+                    Text("Crown = desplazar")
                         .font(.system(size: 9))
                         .foregroundColor(.white.opacity(0.15))
                     Spacer()

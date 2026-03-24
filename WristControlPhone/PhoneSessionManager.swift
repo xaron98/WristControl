@@ -30,7 +30,9 @@ class PhoneSessionManager: NSObject, ObservableObject, WCSessionDelegate {
         ]
 
         session.sendMessage(message, replyHandler: nil) { error in
+            #if DEBUG
             print("[WristControl] Error sending status to Watch: \(error.localizedDescription)")
+            #endif
         }
     }
 

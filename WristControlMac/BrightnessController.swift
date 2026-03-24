@@ -5,6 +5,8 @@ import CoreGraphics
 @MainActor
 class BrightnessController {
 
+    private init() {}
+
     // Current software brightness level (0.0 = black, 1.0 = full)
     private static var currentBrightness: Float = 1.0
 

@@ -83,7 +83,7 @@ private struct ControlesTab: View {
                     // Brightness slider
                     ControlSlider(
                         icon: "sun.max.fill",
-                        label: "Brightness",
+                        label: "Brillo",
                         value: $brightness,
                         tint: .yellow
                     )
@@ -99,7 +99,7 @@ private struct ControlesTab: View {
                     // Volume slider
                     ControlSlider(
                         icon: "speaker.wave.2.fill",
-                        label: "Volume",
+                        label: "Volumen",
                         value: $volume,
                         tint: .blue
                     )

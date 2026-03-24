@@ -2,7 +2,7 @@
 import SwiftUI
 import AppKit
 
-class ServerManager: ObservableObject {
+private class ServerManager: ObservableObject {
     let server = TCPServer()
     @Published var accessibilityGranted: Bool = false
 

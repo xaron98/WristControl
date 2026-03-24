@@ -5,25 +5,35 @@ import AudioToolbox
 
 class VolumeController {
 
-    static func setVolume(_ value: Float) {
-        let clamped = min(max(value, 0.0), 1.0)
+    private init() {}
 
-        var defaultOutputDeviceID = AudioDeviceID(0)
-        var defaultOutputDeviceIDSize = UInt32(MemoryLayout.size(ofValue: defaultOutputDeviceID))
-
-        var getDefaultOutputDevicePropertyAddress = AudioObjectPropertyAddress(
+    private static func defaultOutputDeviceID() -> AudioDeviceID {
+        var deviceID = AudioDeviceID(0)
+        var deviceIDSize = UInt32(MemoryLayout.size(ofValue: deviceID))
+        var propertyAddress = AudioObjectPropertyAddress(
             mSelector: kAudioHardwarePropertyDefaultOutputDevice,
             mScope: kAudioObjectPropertyScopeGlobal,
             mElement: kAudioObjectPropertyElementMain
         )
-
-        AudioObjectGetPropertyData(
+        let status = AudioObjectGetPropertyData(
             AudioObjectID(kAudioObjectSystemObject),
-            &getDefaultOutputDevicePropertyAddress,
+            &propertyAddress,
             0, nil,
-            &defaultOutputDeviceIDSize,
-            &defaultOutputDeviceID
+            &deviceIDSize,
+            &deviceID
         )
+        if status != noErr {
+            #if DEBUG
+            print("[WristControl] Error getting default output device: \(status)")
+            #endif
+        }
+        return deviceID
+    }
+
+    static func setVolume(_ value: Float) {
+        let clamped = min(max(value, 0.0), 1.0)
+
+        let defaultOutputDeviceID = defaultOutputDeviceID()
 
         var volume = Float32(clamped)
         let volumeSize = UInt32(MemoryLayout.size(ofValue: volume))
@@ -34,32 +44,22 @@ class VolumeController {
             mElement: kAudioObjectPropertyElementMain
         )
 
-        AudioObjectSetPropertyData(
+        let status = AudioObjectSetPropertyData(
             defaultOutputDeviceID,
             &volumePropertyAddress,
             0, nil,
             volumeSize,
             &volume
         )
+        if status != noErr {
+            #if DEBUG
+            print("[WristControl] Error setting volume: \(status)")
+            #endif
+        }
     }
 
     static func getVolume() -> Float {
-        var defaultOutputDeviceID = AudioDeviceID(0)
-        var defaultOutputDeviceIDSize = UInt32(MemoryLayout.size(ofValue: defaultOutputDeviceID))
-
-        var getDefaultOutputDevicePropertyAddress = AudioObjectPropertyAddress(
-            mSelector: kAudioHardwarePropertyDefaultOutputDevice,
-            mScope: kAudioObjectPropertyScopeGlobal,
-            mElement: kAudioObjectPropertyElementMain
-        )
-
-        AudioObjectGetPropertyData(
-            AudioObjectID(kAudioObjectSystemObject),
-            &getDefaultOutputDevicePropertyAddress,
-            0, nil,
-            &defaultOutputDeviceIDSize,
-            &defaultOutputDeviceID
-        )
+        let defaultOutputDeviceID = defaultOutputDeviceID()
 
         var volume = Float32(0.0)
         var volumeSize = UInt32(MemoryLayout.size(ofValue: volume))
@@ -70,13 +70,18 @@ class VolumeController {
             mElement: kAudioObjectPropertyElementMain
         )
 
-        AudioObjectGetPropertyData(
+        let status = AudioObjectGetPropertyData(
             defaultOutputDeviceID,
             &volumePropertyAddress,
             0, nil,
             &volumeSize,
             &volume
         )
+        if status != noErr {
+            #if DEBUG
+            print("[WristControl] Error getting volume: \(status)")
+            #endif
+        }
 
         return volume
     }

@@ -43,9 +43,13 @@ class TCPServer {
                 guard let self = self else { return }
                 switch state {
                 case .ready:
+                    #if DEBUG
                     print("[WristControl] TCP ready on port \(self.tcpPort)")
+                    #endif
                 case .failed(let error):
+                    #if DEBUG
                     print("[WristControl] TCP failed: \(error)")
+                    #endif
                 default:
                     break
                 }
@@ -53,7 +57,9 @@ class TCPServer {
 
             listener?.start(queue: .main)
         } catch {
+            #if DEBUG
             print("[WristControl] Error creating TCP listener: \(error)")
+            #endif
         }
     }
 
@@ -84,13 +90,17 @@ class TCPServer {
             udpListener?.stateUpdateHandler = { [weak self] state in
                 guard let self = self else { return }
                 if case .ready = state {
+                    #if DEBUG
                     print("[WristControl] UDP ready on port \(self.udpPort)")
+                    #endif
                 }
             }
 
             udpListener?.start(queue: .global(qos: .userInteractive))
         } catch {
+            #if DEBUG
             print("[WristControl] Error creating UDP listener: \(error)")
+            #endif
         }
     }
 
@@ -128,7 +138,9 @@ class TCPServer {
     // MARK: - TCP connection handling
 
     private func handleNewConnection(_ connection: NWConnection) {
+        #if DEBUG
         print("[WristControl] New connection from iPhone")
+        #endif
         // Cancel old connections (single-client system)
         for old in connections {
             old.cancel()
@@ -183,7 +195,7 @@ class TCPServer {
               (command.deltaX ?? 0).isFinite,
               (command.deltaY ?? 0).isFinite else { return }
 
-        if command.value < 0 && (command.type == .brightness || command.type == .volume) {
+        if command.type == .statusRequest {
             DispatchQueue.main.async {
                 self.sendCurrentStatus(to: connection)
             }
@@ -209,6 +221,8 @@ class TCPServer {
                 VolumeController.setVolume(command.value)
                 self.sendCurrentStatus(to: connection)
             }
+        case .statusRequest:
+            break // handled above before the switch
         }
     }
 
@@ -226,7 +240,9 @@ class TCPServer {
 
         connection.send(content: lengthData + data, completion: .contentProcessed { error in
             if let error = error {
+                #if DEBUG
                 print("[WristControl] Error sending status: \(error)")
+                #endif
             }
         })
     }

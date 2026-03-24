@@ -4,6 +4,8 @@ import CoreGraphics
 
 class MouseController {
 
+    private init() {}
+
     static func moveMouse(deltaX: Float, deltaY: Float) {
         guard let event = CGEvent(source: nil) else { return }
         let currentPos = event.location

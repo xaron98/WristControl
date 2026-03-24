@@ -20,7 +20,9 @@ class WatchSessionManager: NSObject, ObservableObject, WCSessionDelegate {
 
     func send(command: ControlCommand) {
         guard let session = session, session.isReachable else {
+            #if DEBUG
             print("[WristControl] iPhone not reachable")
+            #endif
             return
         }
 
@@ -28,7 +30,9 @@ class WatchSessionManager: NSObject, ObservableObject, WCSessionDelegate {
             command.dictionaryRepresentation,
             replyHandler: nil,
             errorHandler: { error in
+                #if DEBUG
                 print("[WristControl] Error sending command: \(error.localizedDescription)")
+                #endif
             }
         )
     }
@@ -41,7 +45,9 @@ class WatchSessionManager: NSObject, ObservableObject, WCSessionDelegate {
         error: Error?
     ) {
         if let error = error {
+            #if DEBUG
             print("[WristControl] WCSession activation error: \(error.localizedDescription)")
+            #endif
         }
     }
 

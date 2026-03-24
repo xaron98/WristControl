@@ -8,6 +8,7 @@ enum ControlType: String, Codable {
     case mouseClick
     case rightClick
     case scroll
+    case statusRequest
 }
 
 struct ControlCommand: Codable {

@@ -144,6 +144,7 @@ class TrackpadUIView: UIView {
     // MARK: - Helpers
 
     private func averageY(of touches: Set<UITouch>) -> CGFloat {
+        guard !touches.isEmpty else { return 0 }
         let sum = touches.reduce(CGFloat(0)) { $0 + $1.location(in: self).y }
         return sum / CGFloat(touches.count)
     }
