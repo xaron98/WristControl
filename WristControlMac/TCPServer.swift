@@ -8,6 +8,7 @@ class TCPServer {
 
     private let serviceType = "_wristcontrol._tcp"
     private let port: UInt16 = 9876
+    private let decoder = JSONDecoder()
 
     func start() {
         do {
@@ -61,45 +62,27 @@ class TCPServer {
         connection.start(queue: .global(qos: .userInteractive))
     }
 
-    private let decoder = JSONDecoder()
-
     private func receiveData(from connection: NWConnection) {
-        // Read up to 4KB at once — may contain header + payload in one read
-        connection.receive(minimumIncompleteLength: 4, maximumLength: 4096) { [weak self] data, _, _, error in
+        // Read 4-byte length header
+        connection.receive(minimumIncompleteLength: 4, maximumLength: 4) { [weak self] data, _, _, error in
             guard let self = self, let data = data, error == nil else { return }
-            self.processBuffer(data, connection: connection)
-            self.receiveData(from: connection)
-        }
-    }
 
-    private func processBuffer(_ data: Data, connection: NWConnection) {
-        guard data.count >= 4 else { return }
+            // Safe aligned read of UInt32
+            var length: UInt32 = 0
+            _ = withUnsafeMutableBytes(of: &length) { data.copyBytes(to: $0) }
+            length = UInt32(bigEndian: length)
 
-        let length = data.prefix(4).withUnsafeBytes { $0.load(as: UInt32.self).bigEndian }
-        let payloadStart = 4
-        let payloadEnd = payloadStart + Int(length)
-
-        guard data.count >= payloadEnd else {
-            // Incomplete — fall back to sequential read
-            let remaining = payloadEnd - data.count
-            connection.receive(minimumIncompleteLength: remaining, maximumLength: remaining) { [weak self] moreData, _, _, _ in
-                guard let self = self, let moreData = moreData else { return }
-                let fullPayload = data.suffix(from: payloadStart) + moreData
-                if let command = try? self.decoder.decode(ControlCommand.self, from: fullPayload) {
+            // Read payload
+            connection.receive(
+                minimumIncompleteLength: Int(length),
+                maximumLength: Int(length)
+            ) { payload, _, _, error in
+                if let payload = payload,
+                   let command = try? self.decoder.decode(ControlCommand.self, from: payload) {
                     self.handleCommand(command, connection: connection)
                 }
+                self.receiveData(from: connection)
             }
-            return
-        }
-
-        let payload = data[payloadStart..<payloadEnd]
-        if let command = try? decoder.decode(ControlCommand.self, from: payload) {
-            handleCommand(command, connection: connection)
-        }
-
-        // Process remaining data in buffer (pipelined commands)
-        if data.count > payloadEnd {
-            processBuffer(data.suffix(from: payloadEnd), connection: connection)
         }
     }
 
@@ -109,8 +92,8 @@ class TCPServer {
             return
         }
 
-        // Mouse/scroll: process immediately on current queue (low latency)
-        // Brightness/volume: dispatch to main
+        // Mouse/scroll: process immediately on background queue (low latency)
+        // Brightness/volume: dispatch to main for UI-related APIs
         switch command.type {
         case .mouseMove:
             MouseController.moveMouse(deltaX: command.deltaX ?? 0, deltaY: command.deltaY ?? 0)
