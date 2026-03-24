@@ -3,8 +3,8 @@ options:
   bundleIdPrefix: com.xaron.wristcontrol
   deploymentTarget:
     watchOS: "10.0"
-    iOS: "16.0"
-    macOS: "13.0"
+    iOS: "17.0"
+    macOS: "14.0"
   xcodeVersion: "16.0"
   generateEmptyDirectories: true
 
