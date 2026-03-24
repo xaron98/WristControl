@@ -16,9 +16,17 @@ class ServerManager: ObservableObject {
     }
 
     func requestAccessibility() {
+        // Try system prompt first
         let options = [kAXTrustedCheckOptionPrompt.takeUnretainedValue(): true] as CFDictionary
         let trusted = AXIsProcessTrustedWithOptions(options)
         accessibilityGranted = trusted
+
+        if !trusted {
+            // Open Accessibility settings directly
+            if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility") {
+                NSWorkspace.shared.open(url)
+            }
+        }
     }
 }
 
