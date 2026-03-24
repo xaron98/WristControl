@@ -12,7 +12,9 @@ class TCPServer {
 
     func start() {
         do {
-            let parameters = NWParameters.tcp
+            let tcpOptions = NWProtocolTCP.Options()
+            tcpOptions.noDelay = true  // Disable Nagle's algorithm for low latency
+            let parameters = NWParameters(tls: nil, tcp: tcpOptions)
             parameters.includePeerToPeer = true
 
             listener = try NWListener(using: parameters, on: NWEndpoint.Port(rawValue: port)!)

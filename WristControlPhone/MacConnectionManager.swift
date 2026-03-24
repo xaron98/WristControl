@@ -59,7 +59,9 @@ class MacConnectionManager: ObservableObject {
     }
 
     private func connectToMac(endpoint: NWEndpoint) {
-        let parameters = NWParameters.tcp
+        let tcpOptions = NWProtocolTCP.Options()
+        tcpOptions.noDelay = true  // Disable Nagle's algorithm for low latency
+        let parameters = NWParameters(tls: nil, tcp: tcpOptions)
         parameters.includePeerToPeer = true
 
         let newConnection = NWConnection(to: endpoint, using: parameters)
