@@ -17,6 +17,11 @@ struct PhoneContentView: View {
                 .tabItem {
                     Label("Trackpad", systemImage: "hand.point.up.left")
                 }
+
+            AccionesTab(macConnection: macConnection)
+                .tabItem {
+                    Label("Acciones", systemImage: "bolt.fill")
+                }
         }
         .onAppear {
             macConnection.startBrowsing()
@@ -170,6 +175,88 @@ private struct TrackpadTab: View {
                 .padding(.bottom, 8)
         }
         .padding()
+    }
+}
+
+// MARK: - Acciones Tab
+
+private struct AccionesTab: View {
+    @ObservedObject var macConnection: MacConnectionManager
+
+    var body: some View {
+        ScrollView {
+            VStack(spacing: 20) {
+                // Media
+                VStack(spacing: 12) {
+                    Text("Multimedia")
+                        .font(.headline)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+
+                    HStack(spacing: 16) {
+                        ActionButton(icon: "backward.fill", label: "Anterior") {
+                            macConnection.send(command: ControlCommand(type: .mediaPrevious, value: 0))
+                        }
+                        ActionButton(icon: "play.fill", label: "Play") {
+                            macConnection.send(command: ControlCommand(type: .mediaPlayPause, value: 0))
+                        }
+                        ActionButton(icon: "forward.fill", label: "Siguiente") {
+                            macConnection.send(command: ControlCommand(type: .mediaNext, value: 0))
+                        }
+                    }
+                }
+
+                Divider()
+
+                // System
+                VStack(spacing: 12) {
+                    Text("Sistema")
+                        .font(.headline)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+
+                    LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
+                        ActionButton(icon: "speaker.slash.fill", label: "Silenciar") {
+                            macConnection.send(command: ControlCommand(type: .mute, value: 0))
+                        }
+                        ActionButton(icon: "moon.fill", label: "Modo oscuro") {
+                            macConnection.send(command: ControlCommand(type: .darkMode, value: 0))
+                        }
+                        ActionButton(icon: "moon.zzz.fill", label: "Suspender") {
+                            macConnection.send(command: ControlCommand(type: .sleep, value: 0))
+                        }
+                        ActionButton(icon: "lock.fill", label: "Bloquear") {
+                            macConnection.send(command: ControlCommand(type: .lockScreen, value: 0))
+                        }
+                        ActionButton(icon: "camera.fill", label: "Captura") {
+                            macConnection.send(command: ControlCommand(type: .screenshot, value: 0))
+                        }
+                    }
+                }
+
+                Spacer()
+            }
+            .padding()
+        }
+    }
+}
+
+private struct ActionButton: View {
+    let icon: String
+    let label: String
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            VStack(spacing: 8) {
+                Image(systemName: icon)
+                    .font(.title2)
+                Text(label)
+                    .font(.caption)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 16)
+            .background(RoundedRectangle(cornerRadius: 16).fill(.ultraThinMaterial))
+        }
+        .buttonStyle(.plain)
     }
 }
 
