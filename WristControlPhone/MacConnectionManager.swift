@@ -92,19 +92,28 @@ class MacConnectionManager: ObservableObject {
         newConnection.start(queue: .global(qos: .userInteractive))
     }
 
+    // Reusable encoder to avoid allocation overhead
+    private let encoder = JSONEncoder()
+
     func send(command: ControlCommand) {
         guard let connection = connection else { return }
 
         do {
-            let data = try JSONEncoder().encode(command)
+            let data = try encoder.encode(command)
             var length = UInt32(data.count).bigEndian
             let lengthData = Data(bytes: &length, count: 4)
 
-            connection.send(content: lengthData + data, completion: .contentProcessed { error in
-                if let error = error {
-                    print("[WristControl] Error sending to Mac: \(error.localizedDescription)")
+            // For high-frequency mouse commands, use idempotent completion (fire-and-forget)
+            let isHighFrequency = command.type == .mouseMove || command.type == .scroll
+            let completion: NWConnection.SendCompletion = isHighFrequency
+                ? .idempotent
+                : .contentProcessed { error in
+                    if let error = error {
+                        print("[WristControl] Error sending to Mac: \(error.localizedDescription)")
+                    }
                 }
-            })
+
+            connection.send(content: lengthData + data, completion: completion)
         } catch {
             print("[WristControl] Error encoding command: \(error)")
         }
