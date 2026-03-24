@@ -26,16 +26,6 @@ class TrackpadUIView: UIView {
     var onRightClick: (() -> Void)?
     var onScroll: ((Float) -> Void)?
 
-    private let sensitivity: CGFloat = 2.5
-
-    // Accumulate deltas and send at screen refresh rate
-    private var accumulatedDX: CGFloat = 0
-    private var accumulatedDY: CGFloat = 0
-    private var accumulatedScroll: CGFloat = 0
-    private var displayLink: CADisplayLink?
-    private var hasMovement = false
-    private var hasScroll = false
-
     override init(frame: CGRect) {
         super.init(frame: frame)
         backgroundColor = UIColor.secondarySystemBackground
@@ -60,50 +50,39 @@ class TrackpadUIView: UIView {
         addGestureRecognizer(rightTapGesture)
 
         tapGesture.require(toFail: rightTapGesture)
-
-        // Display link for batching sends at 60fps
-        displayLink = CADisplayLink(target: self, selector: #selector(flushDeltas))
-        displayLink?.preferredFrameRateRange = CAFrameRateRange(minimum: 30, maximum: 60)
-        displayLink?.add(to: .main, forMode: .common)
     }
 
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
 
-    deinit {
-        displayLink?.invalidate()
+    // Cursor acceleration: small deltas = precise, large deltas = fast
+    private func accelerate(_ delta: CGFloat) -> Float {
+        let abs = abs(delta)
+        let speed: CGFloat
+        if abs < 2 {
+            speed = delta * 1.5       // Precise
+        } else if abs < 8 {
+            speed = delta * 2.5       // Normal
+        } else {
+            speed = delta * 4.0       // Fast
+        }
+        return Float(speed)
     }
 
     @objc private func handlePan(_ gesture: UIPanGestureRecognizer) {
         guard gesture.state == .changed else { return }
         let translation = gesture.translation(in: self)
         gesture.setTranslation(.zero, in: self)
-        accumulatedDX += translation.x * sensitivity
-        accumulatedDY += translation.y * sensitivity
-        hasMovement = true
+        // Send immediately — no batching with UDP
+        onMove?(accelerate(translation.x), accelerate(translation.y))
     }
 
     @objc private func handleScroll(_ gesture: UIPanGestureRecognizer) {
         guard gesture.state == .changed else { return }
         let translation = gesture.translation(in: self)
         gesture.setTranslation(.zero, in: self)
-        accumulatedScroll += -translation.y * 0.5
-        hasScroll = true
-    }
-
-    @objc private func flushDeltas() {
-        if hasMovement {
-            onMove?(Float(accumulatedDX), Float(accumulatedDY))
-            accumulatedDX = 0
-            accumulatedDY = 0
-            hasMovement = false
-        }
-        if hasScroll {
-            onScroll?(Float(accumulatedScroll))
-            accumulatedScroll = 0
-            hasScroll = false
-        }
+        onScroll?(Float(-translation.y * 0.8))
     }
 
     @objc private func handleTap(_ gesture: UITapGestureRecognizer) {
