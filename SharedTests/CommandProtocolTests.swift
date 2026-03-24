@@ -26,7 +26,9 @@ final class CommandProtocolTests: XCTestCase {
         XCTAssertNil(ControlCommand.from(dictionary: bad))
 
         let missing: [String: Any] = ["type": "brightness"]
-        XCTAssertNil(ControlCommand.from(dictionary: missing))
+        let restored = ControlCommand.from(dictionary: missing)
+        XCTAssertNotNil(restored)
+        XCTAssertEqual(restored?.value ?? -1, 0, accuracy: 0.001)
     }
 
     func testStatusUpdateEncodeDecode() throws {

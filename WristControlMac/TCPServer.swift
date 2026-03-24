@@ -125,7 +125,7 @@ class TCPServer {
             }
         }
 
-        connection.start(queue: .global(qos: .userInteractive))
+        connection.start(queue: .main)
     }
 
     private func receiveData(from connection: NWConnection) {
@@ -135,6 +135,8 @@ class TCPServer {
             var length: UInt32 = 0
             _ = withUnsafeMutableBytes(of: &length) { data.copyBytes(to: $0) }
             length = UInt32(bigEndian: length)
+
+            guard length > 0 && length < 65536 else { self.receiveData(from: connection); return }
 
             connection.receive(
                 minimumIncompleteLength: Int(length),

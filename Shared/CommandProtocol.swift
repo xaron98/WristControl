@@ -55,9 +55,9 @@ struct ControlCommand: Codable {
             let typeRaw = dictionary["type"] as? String,
             let type = ControlType(rawValue: typeRaw)
         else { return nil }
-        let value = dictionary["value"] as? Float ?? 0
-        let deltaX = dictionary["deltaX"] as? Float
-        let deltaY = dictionary["deltaY"] as? Float
+        let value = (dictionary["value"] as? NSNumber)?.floatValue ?? 0
+        let deltaX = (dictionary["deltaX"] as? NSNumber)?.floatValue
+        let deltaY = (dictionary["deltaY"] as? NSNumber)?.floatValue
         return ControlCommand(type: type, value: value, deltaX: deltaX, deltaY: deltaY)
     }
 }

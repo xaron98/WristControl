@@ -79,7 +79,7 @@ private struct ControlesTab: View {
                         value: $brightness,
                         tint: .yellow
                     )
-                    .onChange(of: brightness) { newValue in
+                    .onChange(of: brightness) { _, newValue in
                         let now = Date()
                         guard now.timeIntervalSince(lastBrightnessSend) >= throttleInterval else { return }
                         lastBrightnessSend = now
@@ -95,7 +95,7 @@ private struct ControlesTab: View {
                         value: $volume,
                         tint: .blue
                     )
-                    .onChange(of: volume) { newValue in
+                    .onChange(of: volume) { _, newValue in
                         let now = Date()
                         guard now.timeIntervalSince(lastVolumeSend) >= throttleInterval else { return }
                         lastVolumeSend = now

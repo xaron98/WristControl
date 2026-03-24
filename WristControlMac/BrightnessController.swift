@@ -2,6 +2,7 @@
 import Foundation
 import CoreGraphics
 
+@MainActor
 class BrightnessController {
 
     // Current software brightness level (0.0 = black, 1.0 = full)

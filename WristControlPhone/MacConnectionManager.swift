@@ -149,11 +149,17 @@ class MacConnectionManager: ObservableObject {
 
     private func receiveData() {
         connection?.receive(minimumIncompleteLength: 4, maximumLength: 4) { [weak self] data, _, _, error in
-            guard let self = self, let data = data else { return }
+            guard let self = self else { return }
+            guard let data = data, error == nil else {
+                // Connection lost or error — will be handled by stateUpdateHandler
+                return
+            }
 
             var length: UInt32 = 0
             _ = withUnsafeMutableBytes(of: &length) { data.copyBytes(to: $0) }
             length = UInt32(bigEndian: length)
+
+            guard length > 0 && length < 65536 else { self.receiveData(); return }
 
             self.connection?.receive(
                 minimumIncompleteLength: Int(length),
