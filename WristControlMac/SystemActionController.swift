@@ -78,18 +78,33 @@ class SystemActionController {
     }
 
     static func lockScreen() {
-        // Use the login window framework approach
-        let process = Process()
-        process.executableURL = URL(fileURLWithPath: "/usr/bin/osascript")
-        process.arguments = ["-e", "tell application \"System Events\" to keystroke \"q\" using {command down, control down}"]
-        try? process.run()
+        // Simulate Cmd+Ctrl+Q (system lock screen shortcut)
+        let src = CGEventSource(stateID: .hidSystemState)
+
+        // Key code 12 = "Q"
+        guard let keyDown = CGEvent(keyboardEventSource: src, virtualKey: 12, keyDown: true),
+              let keyUp = CGEvent(keyboardEventSource: src, virtualKey: 12, keyDown: false) else { return }
+
+        keyDown.flags = [.maskCommand, .maskControl]
+        keyUp.flags = [.maskCommand, .maskControl]
+
+        keyDown.post(tap: .cghidEventTap)
+        keyUp.post(tap: .cghidEventTap)
     }
 
     static func takeScreenshot() {
-        let process = Process()
-        process.executableURL = URL(fileURLWithPath: "/usr/sbin/screencapture")
-        process.arguments = ["-x", "-t", "png", NSHomeDirectory() + "/Desktop/WristControl-\(Int(Date().timeIntervalSince1970)).png"]
-        try? process.run()
+        // Simulate Cmd+Shift+3 (system screenshot, no Screen Recording permission needed)
+        let src = CGEventSource(stateID: .hidSystemState)
+
+        // Key code 20 = "3"
+        guard let keyDown = CGEvent(keyboardEventSource: src, virtualKey: 20, keyDown: true),
+              let keyUp = CGEvent(keyboardEventSource: src, virtualKey: 20, keyDown: false) else { return }
+
+        keyDown.flags = [.maskCommand, .maskShift]
+        keyUp.flags = [.maskCommand, .maskShift]
+
+        keyDown.post(tap: .cghidEventTap)
+        keyUp.post(tap: .cghidEventTap)
     }
 
     static func toggleDarkMode() {
