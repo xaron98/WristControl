@@ -10,10 +10,16 @@ class MacConnectionManager: ObservableObject {
 
     private var connection: NWConnection?
     private var browser: NWBrowser?
+    private var isConnecting: Bool = false
 
     private let serviceType = "_wristcontrol._tcp"
 
     func startBrowsing() {
+        // Don't browse if already connected or connecting
+        guard !isConnected && !isConnecting else { return }
+
+        stopBrowsing()
+
         let parameters = NWParameters()
         parameters.includePeerToPeer = true
 
@@ -23,7 +29,7 @@ class MacConnectionManager: ObservableObject {
         )
 
         browser?.browseResultsChangedHandler = { [weak self] results, changes in
-            guard let self = self else { return }
+            guard let self = self, !self.isConnected, !self.isConnecting else { return }
 
             if let result = results.first {
                 switch result.endpoint {
@@ -31,6 +37,8 @@ class MacConnectionManager: ObservableObject {
                     DispatchQueue.main.async {
                         self.macName = name
                     }
+                    self.isConnecting = true
+                    self.stopBrowsing()
                     self.connectToMac(endpoint: result.endpoint)
                 default:
                     break
@@ -51,23 +59,27 @@ class MacConnectionManager: ObservableObject {
     }
 
     private func connectToMac(endpoint: NWEndpoint) {
-        connection?.cancel()
-
         let parameters = NWParameters.tcp
         parameters.includePeerToPeer = true
 
-        connection = NWConnection(to: endpoint, using: parameters)
+        let newConnection = NWConnection(to: endpoint, using: parameters)
 
-        connection?.stateUpdateHandler = { [weak self] state in
+        newConnection.stateUpdateHandler = { [weak self] state in
             DispatchQueue.main.async {
+                guard let self = self else { return }
                 switch state {
                 case .ready:
-                    self?.isConnected = true
-                    self?.requestCurrentStatus()
+                    self.isConnecting = false
+                    self.isConnected = true
+                    self.receiveData()
+                    self.requestCurrentStatus()
                 case .failed, .cancelled:
-                    self?.isConnected = false
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                        self?.startBrowsing()
+                    self.isConnecting = false
+                    self.isConnected = false
+                    self.connection = nil
+                    // Retry after delay
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                        self.startBrowsing()
                     }
                 default:
                     break
@@ -75,8 +87,9 @@ class MacConnectionManager: ObservableObject {
             }
         }
 
-        connection?.start(queue: .global(qos: .userInteractive))
-        receiveData()
+        connection?.cancel()
+        connection = newConnection
+        newConnection.start(queue: .global(qos: .userInteractive))
     }
 
     func send(command: ControlCommand) {
