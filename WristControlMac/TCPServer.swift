@@ -221,6 +221,22 @@ class TCPServer {
                 VolumeController.setVolume(command.value)
                 self.sendCurrentStatus(to: connection)
             }
+        case .mediaPlayPause:
+            SystemActionController.mediaPlayPause()
+        case .mediaNext:
+            SystemActionController.mediaNext()
+        case .mediaPrevious:
+            SystemActionController.mediaPrevious()
+        case .mute:
+            SystemActionController.toggleMute()
+        case .sleep:
+            SystemActionController.sleepDisplay()
+        case .lockScreen:
+            SystemActionController.lockScreen()
+        case .screenshot:
+            SystemActionController.takeScreenshot()
+        case .darkMode:
+            SystemActionController.toggleDarkMode()
         case .statusRequest:
             break // handled above before the switch
         }
