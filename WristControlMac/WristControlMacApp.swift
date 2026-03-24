@@ -14,7 +14,7 @@ struct WristControlMacApp: App {
     @StateObject private var serverManager = ServerManager()
 
     var body: some Scene {
-        MenuBarExtra("WristControl", systemImage: "slider.horizontal.3") {
+        MenuBarExtra("WristControl", image: "MenuBarIcon") {
             Text("WristControl Activo")
                 .font(.headline)
             Divider()
