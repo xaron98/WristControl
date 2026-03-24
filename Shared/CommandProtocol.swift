@@ -9,6 +9,14 @@ enum ControlType: String, Codable {
     case rightClick
     case scroll
     case statusRequest
+    case mediaPlayPause
+    case mediaNext
+    case mediaPrevious
+    case mute
+    case sleep
+    case lockScreen
+    case screenshot
+    case darkMode
 }
 
 struct ControlCommand: Codable {

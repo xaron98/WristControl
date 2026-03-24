@@ -173,7 +173,7 @@ class MacConnectionManager: ObservableObject {
                 maximumLength: Int(length)
             ) { payload, _, _, error in
                 if let payload = payload,
-                   let status = try? decoder.decode(StatusUpdate.self, from: payload) {
+                   let status = try? self.decoder.decode(StatusUpdate.self, from: payload) {
                     DispatchQueue.main.async {
                         PhoneSessionManager.shared.sendStatus(status)
                     }
