@@ -16,6 +16,7 @@ class MacConnectionManager: ObservableObject {
 
     private let serviceType = "_wristcontrol._tcp"
     private let encoder = JSONEncoder()
+    private let decoder = JSONDecoder()
 
     func startBrowsing() {
         guard !isConnected && !isConnecting else { return }
@@ -166,7 +167,7 @@ class MacConnectionManager: ObservableObject {
                 maximumLength: Int(length)
             ) { payload, _, _, error in
                 if let payload = payload,
-                   let status = try? JSONDecoder().decode(StatusUpdate.self, from: payload) {
+                   let status = try? decoder.decode(StatusUpdate.self, from: payload) {
                     DispatchQueue.main.async {
                         PhoneSessionManager.shared.sendStatus(status)
                     }

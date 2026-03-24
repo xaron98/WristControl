@@ -72,10 +72,15 @@ struct WatchTrackpadView: View {
         .onChange(of: scrollValue) { _, newValue in
             let delta = Float(newValue - lastScrollValue)
             lastScrollValue = newValue
+
+            // Skip if this is a reset
+            if abs(delta) > 100 { return }
+
             if abs(delta) > 0.1 {
                 let command = ControlCommand(type: .scroll, deltaX: 0, deltaY: delta * 5)
                 WatchSessionManager.shared.send(command: command)
             }
+
             if abs(scrollValue) > 5000 {
                 scrollValue = 0
                 lastScrollValue = 0

@@ -11,6 +11,8 @@ class TCPServer {
     private let tcpPort: UInt16 = 9876
     private let udpPort: UInt16 = 9877
     private let decoder = JSONDecoder()
+    private let encoder = JSONEncoder()
+    private var allowedHost: NWEndpoint.Host?
 
     func start() {
         startTCP()
@@ -65,6 +67,16 @@ class TCPServer {
             udpListener = try NWListener(using: parameters, on: NWEndpoint.Port(rawValue: udpPort)!)
 
             udpListener?.newConnectionHandler = { [weak self] connection in
+                // Verify source matches connected iPhone
+                if let self = self, let allowed = self.allowedHost {
+                    if let path = connection.currentPath,
+                       let remote = path.remoteEndpoint,
+                       case .hostPort(let host, _) = remote,
+                       host != allowed {
+                        connection.cancel()
+                        return
+                    }
+                }
                 connection.start(queue: .global(qos: .userInteractive))
                 self?.receiveUDP(from: connection)
             }
@@ -94,6 +106,11 @@ class TCPServer {
                 _ = withUnsafeMutableBytes(of: &dx) { data[1..<5].copyBytes(to: $0) }
                 _ = withUnsafeMutableBytes(of: &dy) { data[5..<9].copyBytes(to: $0) }
 
+                guard dx.isFinite && dy.isFinite else {
+                    self.receiveUDP(from: connection)
+                    return
+                }
+
                 switch typeByte {
                 case 0: // mouseMove
                     MouseController.moveMouse(deltaX: dx, deltaY: dy)
@@ -112,11 +129,21 @@ class TCPServer {
 
     private func handleNewConnection(_ connection: NWConnection) {
         print("[WristControl] New connection from iPhone")
+        // Cancel old connections (single-client system)
+        for old in connections {
+            old.cancel()
+        }
+        connections.removeAll()
         connections.append(connection)
 
         connection.stateUpdateHandler = { [weak self] state in
             switch state {
             case .ready:
+                if let path = connection.currentPath,
+                   let remote = path.remoteEndpoint,
+                   case .hostPort(let host, _) = remote {
+                    self?.allowedHost = host
+                }
                 self?.receiveData(from: connection)
             case .failed, .cancelled:
                 self?.connections.removeAll { $0 === connection }
@@ -152,6 +179,10 @@ class TCPServer {
     }
 
     private func handleCommand(_ command: ControlCommand, connection: NWConnection) {
+        guard command.value.isFinite,
+              (command.deltaX ?? 0).isFinite,
+              (command.deltaY ?? 0).isFinite else { return }
+
         if command.value < 0 && (command.type == .brightness || command.type == .volume) {
             DispatchQueue.main.async {
                 self.sendCurrentStatus(to: connection)
@@ -188,7 +219,7 @@ class TCPServer {
             connected: true
         )
 
-        guard let data = try? JSONEncoder().encode(status) else { return }
+        guard let data = try? encoder.encode(status) else { return }
 
         var length = UInt32(data.count).bigEndian
         let lengthData = Data(bytes: &length, count: 4)

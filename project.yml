@@ -65,7 +65,7 @@ targets:
     entitlements:
       path: WristControlMac/WristControlMac.entitlements
       properties:
-        com.apple.security.app-sandbox: true
+        com.apple.security.app-sandbox: false
         com.apple.security.network.client: true
         com.apple.security.network.server: true
     settings:

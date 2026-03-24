@@ -1,7 +1,6 @@
 // WristControlMac/MouseController.swift
 import Foundation
 import CoreGraphics
-import AppKit
 
 class MouseController {
 
@@ -11,10 +10,10 @@ class MouseController {
         let newX = currentPos.x + CGFloat(deltaX)
         let newY = currentPos.y + CGFloat(deltaY)
 
-        // Clamp to screen bounds
-        let screenFrame = NSScreen.main?.frame ?? CGRect(x: 0, y: 0, width: 1920, height: 1080)
-        let clampedX = min(max(newX, screenFrame.minX), screenFrame.maxX - 1)
-        let clampedY = min(max(newY, screenFrame.minY), screenFrame.maxY - 1)
+        // Clamp to screen bounds (CGDisplayBounds is thread-safe, unlike NSScreen.main)
+        let screenBounds = CGDisplayBounds(CGMainDisplayID())
+        let clampedX = min(max(newX, 0), screenBounds.width - 1)
+        let clampedY = min(max(newY, 0), screenBounds.height - 1)
 
         let point = CGPoint(x: clampedX, y: clampedY)
         if let moveEvent = CGEvent(mouseEventSource: nil, mouseType: .mouseMoved,

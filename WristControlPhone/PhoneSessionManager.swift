@@ -5,7 +5,6 @@ import WatchConnectivity
 class PhoneSessionManager: NSObject, ObservableObject, WCSessionDelegate {
     static let shared = PhoneSessionManager()
 
-    @Published var lastCommand: ControlCommand?
     @Published var watchReachable: Bool = false
 
     var onCommandReceived: ((ControlCommand) -> Void)?
@@ -62,7 +61,6 @@ class PhoneSessionManager: NSObject, ObservableObject, WCSessionDelegate {
     func session(_ session: WCSession, didReceiveMessage message: [String: Any]) {
         if let command = ControlCommand.from(dictionary: message) {
             DispatchQueue.main.async {
-                self.lastCommand = command
                 self.onCommandReceived?(command)
             }
         }

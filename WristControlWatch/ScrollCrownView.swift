@@ -36,6 +36,9 @@ struct ScrollCrownView: View {
             let delta = Float(newValue - lastCrownValue)
             lastCrownValue = newValue
 
+            // Skip if this is a reset
+            if abs(delta) > 100 { return }
+
             if abs(delta) > 0.1 {
                 onScroll(delta * 5)
             }
