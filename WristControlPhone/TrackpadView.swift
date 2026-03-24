@@ -1,0 +1,87 @@
+// WristControlPhone/TrackpadView.swift
+import SwiftUI
+import UIKit
+
+struct TrackpadView: UIViewRepresentable {
+    let onMove: (Float, Float) -> Void
+    let onClick: () -> Void
+    let onRightClick: () -> Void
+    let onScroll: (Float) -> Void
+
+    func makeUIView(context: Context) -> TrackpadUIView {
+        let view = TrackpadUIView()
+        view.onMove = onMove
+        view.onClick = onClick
+        view.onRightClick = onRightClick
+        view.onScroll = onScroll
+        return view
+    }
+
+    func updateUIView(_ uiView: TrackpadUIView, context: Context) {}
+}
+
+class TrackpadUIView: UIView {
+    var onMove: ((Float, Float) -> Void)?
+    var onClick: (() -> Void)?
+    var onRightClick: (() -> Void)?
+    var onScroll: ((Float) -> Void)?
+
+    private let sensitivity: CGFloat = 2.0
+
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        backgroundColor = UIColor.secondarySystemBackground
+        layer.cornerRadius = 16
+
+        // One-finger pan for mouse movement
+        let panGesture = UIPanGestureRecognizer(target: self, action: #selector(handlePan))
+        panGesture.minimumNumberOfTouches = 1
+        panGesture.maximumNumberOfTouches = 1
+        addGestureRecognizer(panGesture)
+
+        // Two-finger pan for scrolling
+        let scrollGesture = UIPanGestureRecognizer(target: self, action: #selector(handleScroll))
+        scrollGesture.minimumNumberOfTouches = 2
+        scrollGesture.maximumNumberOfTouches = 2
+        addGestureRecognizer(scrollGesture)
+
+        // Single tap for left click
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleTap))
+        tapGesture.numberOfTouchesRequired = 1
+        addGestureRecognizer(tapGesture)
+
+        // Two-finger tap for right click
+        let rightTapGesture = UITapGestureRecognizer(target: self, action: #selector(handleRightTap))
+        rightTapGesture.numberOfTouchesRequired = 2
+        addGestureRecognizer(rightTapGesture)
+
+        // Prevent single tap from blocking two-finger tap
+        tapGesture.require(toFail: rightTapGesture)
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    @objc private func handlePan(_ gesture: UIPanGestureRecognizer) {
+        guard gesture.state == .changed else { return }
+        let translation = gesture.translation(in: self)
+        gesture.setTranslation(.zero, in: self)
+        onMove?(Float(translation.x * sensitivity), Float(translation.y * sensitivity))
+    }
+
+    @objc private func handleScroll(_ gesture: UIPanGestureRecognizer) {
+        guard gesture.state == .changed else { return }
+        let translation = gesture.translation(in: self)
+        gesture.setTranslation(.zero, in: self)
+        onScroll?(Float(-translation.y * 0.5))
+    }
+
+    @objc private func handleTap(_ gesture: UITapGestureRecognizer) {
+        onClick?()
+    }
+
+    @objc private func handleRightTap(_ gesture: UITapGestureRecognizer) {
+        onRightClick?()
+    }
+}
