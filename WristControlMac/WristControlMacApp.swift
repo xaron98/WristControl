@@ -1,43 +1,28 @@
 // WristControlMac/WristControlMacApp.swift
 import SwiftUI
 
-@main
-struct WristControlMacApp: App {
-    @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+class ServerManager: ObservableObject {
+    let server = TCPServer()
 
-    var body: some Scene {
-        Settings {
-            EmptyView()
-        }
+    init() {
+        server.start()
     }
 }
 
-class AppDelegate: NSObject, NSApplicationDelegate {
-    private var statusItem: NSStatusItem!
-    private var server: TCPServer!
+@main
+struct WristControlMacApp: App {
+    @StateObject private var serverManager = ServerManager()
 
-    func applicationDidFinishLaunching(_ notification: Notification) {
-        statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
-
-        if let button = statusItem.button {
-            button.image = NSImage(systemSymbolName: "applewatch", accessibilityDescription: "WristControl")
+    var body: some Scene {
+        MenuBarExtra("WristControl", systemImage: "slider.horizontal.3") {
+            Text("WristControl Activo")
+                .font(.headline)
+            Divider()
+            Button("Salir") {
+                NSApp.terminate(nil)
+            }
+            .keyboardShortcut("q")
         }
-
-        let menu = NSMenu()
-        menu.addItem(NSMenuItem(title: "WristControl Activo", action: nil, keyEquivalent: ""))
-        menu.addItem(NSMenuItem.separator())
-        menu.addItem(NSMenuItem(
-            title: "Salir",
-            action: #selector(quit),
-            keyEquivalent: "q"
-        ))
-        statusItem.menu = menu
-
-        server = TCPServer()
-        server.start()
-    }
-
-    @objc func quit() {
-        NSApp.terminate(nil)
+        .menuBarExtraStyle(.menu)
     }
 }
