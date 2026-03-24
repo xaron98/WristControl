@@ -3,8 +3,6 @@ import SwiftUI
 import WatchKit
 
 struct WatchTrackpadView: View {
-    @Environment(\.dismiss) private var dismiss
-
     @State private var scrollValue: Double = 0.0
     @State private var lastScrollValue: Double = 0.0
     @State private var lastDragLocation: CGPoint? = nil
@@ -94,8 +92,6 @@ struct WatchTrackpadView: View {
                 lastScrollValue = 0
             }
         }
-        .navigationTitle("Trackpad")
-        .navigationBarTitleDisplayMode(.inline)
     }
 
     // Same smooth acceleration as iPhone
