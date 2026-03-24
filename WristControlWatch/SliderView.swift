@@ -5,6 +5,7 @@ enum ActiveControl: String {
     case none
     case brightness
     case volume
+    case scroll
 }
 
 struct SliderView: View {

@@ -13,7 +13,7 @@ struct ContentView: View {
             return $brightnessValue
         case .volume:
             return $volumeValue
-        case .none:
+        case .none, .scroll:
             return .constant(0)
         }
     }
@@ -29,7 +29,7 @@ struct ContentView: View {
                     .foregroundColor(.secondary)
             }
 
-            HStack(spacing: 16) {
+            HStack(spacing: 8) {
                 ControlButton(
                     icon: "sun.max.fill",
                     label: "Brillo",
@@ -51,9 +51,26 @@ struct ContentView: View {
                         activeControl = activeControl == .volume ? .none : .volume
                     }
                 }
+
+                ControlButton(
+                    icon: "arrow.up.and.down",
+                    label: "Scroll",
+                    isActive: activeControl == .scroll,
+                    color: .green
+                ) {
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        activeControl = activeControl == .scroll ? .none : .scroll
+                    }
+                }
             }
 
-            if activeControl != .none {
+            if activeControl == .scroll {
+                ScrollCrownView { delta in
+                    let command = ControlCommand(type: .scroll, deltaX: 0, deltaY: delta)
+                    WatchSessionManager.shared.send(command: command)
+                }
+                .transition(.move(edge: .bottom).combined(with: .opacity))
+            } else if activeControl != .none {
                 SliderView(
                     value: activeValue,
                     controlType: activeControl,
