@@ -81,7 +81,8 @@ class TCPServer {
     }
 
     private func handleCommand(_ command: ControlCommand, connection: NWConnection) {
-        if command.value < 0 {
+        // value -1 = status request (only for brightness/volume)
+        if command.value < 0 && (command.type == .brightness || command.type == .volume) {
             sendCurrentStatus(to: connection)
             return
         }
@@ -90,10 +91,19 @@ class TCPServer {
             switch command.type {
             case .brightness:
                 BrightnessController.setBrightness(command.value)
+                self.sendCurrentStatus(to: connection)
             case .volume:
                 VolumeController.setVolume(command.value)
+                self.sendCurrentStatus(to: connection)
+            case .mouseMove:
+                MouseController.moveMouse(deltaX: command.deltaX ?? 0, deltaY: command.deltaY ?? 0)
+            case .mouseClick:
+                MouseController.click()
+            case .rightClick:
+                MouseController.rightClick()
+            case .scroll:
+                MouseController.scroll(deltaY: command.deltaY ?? command.value)
             }
-            self.sendCurrentStatus(to: connection)
         }
     }
 
