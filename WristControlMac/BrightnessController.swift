@@ -4,30 +4,61 @@ import CoreGraphics
 
 class BrightnessController {
 
-    // Load CoreDisplay private framework at runtime to avoid linker errors
-    private static let coreDisplayHandle: UnsafeMutableRawPointer? = {
-        dlopen("/System/Library/Frameworks/CoreDisplay.framework/CoreDisplay", RTLD_LAZY)
-    }()
+    // Current software brightness level (0.0 = black, 1.0 = full)
+    private static var currentBrightness: Float = 1.0
 
-    private static let _setBrightness: (@convention(c) (CGDirectDisplayID, Double) -> Void)? = {
-        guard let handle = coreDisplayHandle,
-              let sym = dlsym(handle, "CoreDisplay_Display_SetUserBrightness") else { return nil }
-        return unsafeBitCast(sym, to: (@convention(c) (CGDirectDisplayID, Double) -> Void).self)
-    }()
+    // Original gamma tables to scale from
+    private static var originalRed = [CGGammaValue](repeating: 0, count: 256)
+    private static var originalGreen = [CGGammaValue](repeating: 0, count: 256)
+    private static var originalBlue = [CGGammaValue](repeating: 0, count: 256)
+    private static var originalSampleCount: UInt32 = 0
+    private static var hasOriginal = false
 
-    private static let _getBrightness: (@convention(c) (CGDirectDisplayID) -> Double)? = {
-        guard let handle = coreDisplayHandle,
-              let sym = dlsym(handle, "CoreDisplay_Display_GetUserBrightness") else { return nil }
-        return unsafeBitCast(sym, to: (@convention(c) (CGDirectDisplayID) -> Double).self)
-    }()
+    private static func captureOriginalGamma() {
+        guard !hasOriginal else { return }
+        let display = CGMainDisplayID()
+        var count: UInt32 = 0
+        let err = CGGetDisplayTransferByTable(
+            display, 256,
+            &originalRed, &originalGreen, &originalBlue,
+            &count
+        )
+        if err == .success && count > 0 {
+            originalSampleCount = count
+            hasOriginal = true
+        }
+    }
 
     static func setBrightness(_ value: Float) {
+        captureOriginalGamma()
+
         let clamped = min(max(value, 0.0), 1.0)
-        _setBrightness?(CGMainDisplayID(), Double(clamped))
+        currentBrightness = clamped
+
+        let display = CGMainDisplayID()
+        let count = hasOriginal ? Int(originalSampleCount) : 256
+
+        var red = [CGGammaValue](repeating: 0, count: count)
+        var green = [CGGammaValue](repeating: 0, count: count)
+        var blue = [CGGammaValue](repeating: 0, count: count)
+
+        for i in 0..<count {
+            if hasOriginal {
+                red[i] = originalRed[i] * clamped
+                green[i] = originalGreen[i] * clamped
+                blue[i] = originalBlue[i] * clamped
+            } else {
+                let v = (Float(i) / Float(count - 1)) * clamped
+                red[i] = v
+                green[i] = v
+                blue[i] = v
+            }
+        }
+
+        CGSetDisplayTransferByTable(display, UInt32(count), red, green, blue)
     }
 
     static func getBrightness() -> Float {
-        guard let fn = _getBrightness else { return 0.5 }
-        return Float(fn(CGMainDisplayID()))
+        return currentBrightness
     }
 }
