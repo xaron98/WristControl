@@ -17,7 +17,12 @@ struct TrackpadView: UIViewRepresentable {
         return view
     }
 
-    func updateUIView(_ uiView: TrackpadUIView, context: Context) {}
+    func updateUIView(_ uiView: TrackpadUIView, context: Context) {
+        uiView.onMove = onMove
+        uiView.onClick = onClick
+        uiView.onRightClick = onRightClick
+        uiView.onScroll = onScroll
+    }
 }
 
 class TrackpadUIView: UIView {
@@ -26,27 +31,31 @@ class TrackpadUIView: UIView {
     var onRightClick: (() -> Void)?
     var onScroll: ((Float) -> Void)?
 
+    // Track last touch position for delta calculation
+    private var lastTouchLocation: CGPoint?
+    private var activeTouchCount: Int = 0
+    private var touchStartTime: TimeInterval = 0
+    private var touchMoved: Bool = false
+
+    // Two-finger scroll tracking
+    private var lastScrollY: CGFloat = 0
+    private var isScrolling: Bool = false
+
     override init(frame: CGRect) {
         super.init(frame: frame)
         backgroundColor = UIColor.secondarySystemBackground
         layer.cornerRadius = 16
+        isMultipleTouchEnabled = true
 
-        let panGesture = UIPanGestureRecognizer(target: self, action: #selector(handlePan))
-        panGesture.minimumNumberOfTouches = 1
-        panGesture.maximumNumberOfTouches = 1
-        addGestureRecognizer(panGesture)
-
-        let scrollGesture = UIPanGestureRecognizer(target: self, action: #selector(handleScroll))
-        scrollGesture.minimumNumberOfTouches = 2
-        scrollGesture.maximumNumberOfTouches = 2
-        addGestureRecognizer(scrollGesture)
-
+        // Tap gestures for clicks (these don't interfere with raw touch tracking)
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleTap))
         tapGesture.numberOfTouchesRequired = 1
+        tapGesture.cancelsTouchesInView = false
         addGestureRecognizer(tapGesture)
 
         let rightTapGesture = UITapGestureRecognizer(target: self, action: #selector(handleRightTap))
         rightTapGesture.numberOfTouchesRequired = 2
+        rightTapGesture.cancelsTouchesInView = false
         addGestureRecognizer(rightTapGesture)
 
         tapGesture.require(toFail: rightTapGesture)
@@ -56,33 +65,87 @@ class TrackpadUIView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
 
-    // Cursor acceleration: small deltas = precise, large deltas = fast
-    private func accelerate(_ delta: CGFloat) -> Float {
-        let abs = abs(delta)
-        let speed: CGFloat
-        if abs < 2 {
-            speed = delta * 1.5       // Precise
-        } else if abs < 8 {
-            speed = delta * 2.5       // Normal
-        } else {
-            speed = delta * 4.0       // Fast
+    // MARK: - Raw touch handling (bypasses gesture recognizer, full hardware rate)
+
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        activeTouchCount = event?.allTouches?.count ?? touches.count
+        touchStartTime = CACurrentMediaTime()
+        touchMoved = false
+
+        if activeTouchCount == 1, let touch = touches.first {
+            lastTouchLocation = touch.location(in: self)
+        } else if activeTouchCount == 2 {
+            // Start scrolling
+            isScrolling = true
+            if let allTouches = event?.allTouches {
+                lastScrollY = averageY(of: allTouches)
+            }
         }
-        return Float(speed)
     }
 
-    @objc private func handlePan(_ gesture: UIPanGestureRecognizer) {
-        guard gesture.state == .changed else { return }
-        let translation = gesture.translation(in: self)
-        gesture.setTranslation(.zero, in: self)
-        // Send immediately — no batching with UDP
-        onMove?(accelerate(translation.x), accelerate(translation.y))
+    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
+        touchMoved = true
+
+        if activeTouchCount == 1, let touch = touches.first {
+            let current = touch.location(in: self)
+
+            // Process coalesced touches for maximum granularity
+            let coalescedTouches = event?.coalescedTouches(for: touch) ?? [touch]
+
+            for coalesced in coalescedTouches {
+                let pos = coalesced.location(in: self)
+                if let last = lastTouchLocation {
+                    let rawDX = pos.x - last.x
+                    let rawDY = pos.y - last.y
+                    let dx = accelerate(rawDX)
+                    let dy = accelerate(rawDY)
+                    if abs(dx) > 0.01 || abs(dy) > 0.01 {
+                        onMove?(dx, dy)
+                    }
+                }
+                lastTouchLocation = pos
+            }
+        } else if activeTouchCount >= 2, isScrolling {
+            if let allTouches = event?.allTouches {
+                let currentY = averageY(of: allTouches)
+                let delta = lastScrollY - currentY
+                if abs(delta) > 0.5 {
+                    onScroll?(Float(delta * 0.8))
+                    lastScrollY = currentY
+                }
+            }
+        }
     }
 
-    @objc private func handleScroll(_ gesture: UIPanGestureRecognizer) {
-        guard gesture.state == .changed else { return }
-        let translation = gesture.translation(in: self)
-        gesture.setTranslation(.zero, in: self)
-        onScroll?(Float(-translation.y * 0.8))
+    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+        lastTouchLocation = nil
+        isScrolling = false
+        activeTouchCount = 0
+    }
+
+    override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
+        lastTouchLocation = nil
+        isScrolling = false
+        activeTouchCount = 0
+    }
+
+    // MARK: - Smooth acceleration curve
+
+    private func accelerate(_ delta: CGFloat) -> Float {
+        let magnitude = abs(delta)
+        // Smooth exponential curve: f(x) = sign(x) * x * (base + scale * |x|^power)
+        let base: CGFloat = 1.2
+        let scale: CGFloat = 0.15
+        let power: CGFloat = 0.8
+        let multiplier = base + scale * pow(magnitude, power)
+        return Float(delta * multiplier)
+    }
+
+    // MARK: - Helpers
+
+    private func averageY(of touches: Set<UITouch>) -> CGFloat {
+        let sum = touches.reduce(CGFloat(0)) { $0 + $1.location(in: self).y }
+        return sum / CGFloat(touches.count)
     }
 
     @objc private func handleTap(_ gesture: UITapGestureRecognizer) {
