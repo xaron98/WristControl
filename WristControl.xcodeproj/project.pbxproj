@@ -10,6 +10,7 @@
 		02FD522E0DC7BE20D747BE4A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 25DCC98F31E24DEA05888B11 /* Assets.xcassets */; };
 		074B7444355D213217C38F8A /* VolumeController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D14B2ED838E370D03500343B /* VolumeController.swift */; };
 		0AA35599422B2F11C73DE32A /* CommandProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAE40D26F1CEE902A7411211 /* CommandProtocol.swift */; };
+		0B2BFE03C86AEFE16C86503F /* WatchTrackpadView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80D805CCA4FA0E1847CF9B18 /* WatchTrackpadView.swift */; };
 		0CAB12A574246AC21EAF63AC /* WristControlPhoneApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C40C223C39DA65674ABCBF1 /* WristControlPhoneApp.swift */; };
 		158B2DECA6C042A9AB6A1B22 /* StatusRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0397019E132B52C2A8DAB528 /* StatusRow.swift */; };
 		29C57BF766D8423ECB63D12F /* MacConnectionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C04BD766716E7E01BC16A912 /* MacConnectionManager.swift */; };
@@ -82,6 +83,7 @@
 		6D5555A69A7F85F075D50B42 /* MouseController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MouseController.swift; sourceTree = "<group>"; };
 		6EC674B2E73F4D19438417E0 /* ControlButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ControlButton.swift; sourceTree = "<group>"; };
 		78787244CA99B8D5355B09AD /* ScrollCrownView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScrollCrownView.swift; sourceTree = "<group>"; };
+		80D805CCA4FA0E1847CF9B18 /* WatchTrackpadView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchTrackpadView.swift; sourceTree = "<group>"; };
 		8D2143B5F9183E8B2968710A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		9B308979608E97993DAD25FB /* WristControlMac.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = WristControlMac.entitlements; sourceTree = "<group>"; };
 		A93AF3B01A3F0C42A1BDA2A8 /* CommandProtocolTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommandProtocolTests.swift; sourceTree = "<group>"; };
@@ -132,6 +134,7 @@
 				78787244CA99B8D5355B09AD /* ScrollCrownView.swift */,
 				BE4AE50CD24A7687D1EC51CE /* SliderView.swift */,
 				69802CC37CF0D9468D8B9E32 /* WatchSessionManager.swift */,
+				80D805CCA4FA0E1847CF9B18 /* WatchTrackpadView.swift */,
 				37E2E78A56472D1DC67BD9EE /* WristControlWatchApp.swift */,
 			);
 			path = WristControlWatch;
@@ -366,6 +369,7 @@
 				2D8A57D27104A782CA771A77 /* ScrollCrownView.swift in Sources */,
 				F30B3C6B5E36A220784CB239 /* SliderView.swift in Sources */,
 				7816F374DE4DD71646921ABB /* WatchSessionManager.swift in Sources */,
+				0B2BFE03C86AEFE16C86503F /* WatchTrackpadView.swift in Sources */,
 				60C299A5ACCB6A8D7090C34A /* WristControlWatchApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

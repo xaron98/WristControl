@@ -61,48 +61,74 @@ class TCPServer {
         connection.start(queue: .global(qos: .userInteractive))
     }
 
+    private let decoder = JSONDecoder()
+
     private func receiveData(from connection: NWConnection) {
-        connection.receive(minimumIncompleteLength: 4, maximumLength: 4) { [weak self] data, _, _, error in
+        // Read up to 4KB at once — may contain header + payload in one read
+        connection.receive(minimumIncompleteLength: 4, maximumLength: 4096) { [weak self] data, _, _, error in
             guard let self = self, let data = data, error == nil else { return }
+            self.processBuffer(data, connection: connection)
+            self.receiveData(from: connection)
+        }
+    }
 
-            let length = data.withUnsafeBytes { $0.load(as: UInt32.self).bigEndian }
+    private func processBuffer(_ data: Data, connection: NWConnection) {
+        guard data.count >= 4 else { return }
 
-            connection.receive(
-                minimumIncompleteLength: Int(length),
-                maximumLength: Int(length)
-            ) { payload, _, _, error in
-                if let payload = payload,
-                   let command = try? JSONDecoder().decode(ControlCommand.self, from: payload) {
+        let length = data.prefix(4).withUnsafeBytes { $0.load(as: UInt32.self).bigEndian }
+        let payloadStart = 4
+        let payloadEnd = payloadStart + Int(length)
+
+        guard data.count >= payloadEnd else {
+            // Incomplete — fall back to sequential read
+            let remaining = payloadEnd - data.count
+            connection.receive(minimumIncompleteLength: remaining, maximumLength: remaining) { [weak self] moreData, _, _, _ in
+                guard let self = self, let moreData = moreData else { return }
+                let fullPayload = data.suffix(from: payloadStart) + moreData
+                if let command = try? self.decoder.decode(ControlCommand.self, from: fullPayload) {
                     self.handleCommand(command, connection: connection)
                 }
-                self.receiveData(from: connection)
             }
+            return
+        }
+
+        let payload = data[payloadStart..<payloadEnd]
+        if let command = try? decoder.decode(ControlCommand.self, from: payload) {
+            handleCommand(command, connection: connection)
+        }
+
+        // Process remaining data in buffer (pipelined commands)
+        if data.count > payloadEnd {
+            processBuffer(data.suffix(from: payloadEnd), connection: connection)
         }
     }
 
     private func handleCommand(_ command: ControlCommand, connection: NWConnection) {
-        // value -1 = status request (only for brightness/volume)
         if command.value < 0 && (command.type == .brightness || command.type == .volume) {
             sendCurrentStatus(to: connection)
             return
         }
 
-        DispatchQueue.main.async {
-            switch command.type {
-            case .brightness:
+        // Mouse/scroll: process immediately on current queue (low latency)
+        // Brightness/volume: dispatch to main
+        switch command.type {
+        case .mouseMove:
+            MouseController.moveMouse(deltaX: command.deltaX ?? 0, deltaY: command.deltaY ?? 0)
+        case .mouseClick:
+            MouseController.click()
+        case .rightClick:
+            MouseController.rightClick()
+        case .scroll:
+            MouseController.scroll(deltaY: command.deltaY ?? command.value)
+        case .brightness:
+            DispatchQueue.main.async {
                 BrightnessController.setBrightness(command.value)
                 self.sendCurrentStatus(to: connection)
-            case .volume:
+            }
+        case .volume:
+            DispatchQueue.main.async {
                 VolumeController.setVolume(command.value)
                 self.sendCurrentStatus(to: connection)
-            case .mouseMove:
-                MouseController.moveMouse(deltaX: command.deltaX ?? 0, deltaY: command.deltaY ?? 0)
-            case .mouseClick:
-                MouseController.click()
-            case .rightClick:
-                MouseController.rightClick()
-            case .scroll:
-                MouseController.scroll(deltaY: command.deltaY ?? command.value)
             }
         }
     }

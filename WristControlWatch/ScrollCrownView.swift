@@ -6,8 +6,6 @@ struct ScrollCrownView: View {
 
     @State private var crownValue: Double = 0.0
     @State private var lastCrownValue: Double = 0.0
-    @State private var lastSentTime: Date = .distantPast
-    private let throttleInterval: TimeInterval = 0.05
 
     var body: some View {
         VStack(spacing: 8) {
@@ -27,10 +25,10 @@ struct ScrollCrownView: View {
         .focusable(true)
         .digitalCrownRotation(
             $crownValue,
-            from: -1000.0,
-            through: 1000.0,
-            by: 0.5,
-            sensitivity: .medium,
+            from: -10000.0,
+            through: 10000.0,
+            by: 1.0,
+            sensitivity: .high,
             isContinuous: true,
             isHapticFeedbackEnabled: true
         )
@@ -38,16 +36,11 @@ struct ScrollCrownView: View {
             let delta = Float(newValue - lastCrownValue)
             lastCrownValue = newValue
 
-            let now = Date()
-            guard now.timeIntervalSince(lastSentTime) >= throttleInterval else { return }
-            lastSentTime = now
-
-            if abs(delta) > 0.01 {
-                onScroll(delta)
+            if abs(delta) > 0.1 {
+                onScroll(delta * 5)
             }
 
-            // Reset to center to avoid drift
-            if abs(crownValue) > 500 {
+            if abs(crownValue) > 5000 {
                 crownValue = 0
                 lastCrownValue = 0
             }
