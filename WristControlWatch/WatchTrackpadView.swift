@@ -7,8 +7,6 @@ struct WatchTrackpadView: View {
 
     @State private var scrollValue: Double = 0.0
     @State private var lastScrollValue: Double = 0.0
-
-    private let sensitivity: Float = 3.0
     @State private var lastDragLocation: CGPoint? = nil
 
     var body: some View {
@@ -17,13 +15,17 @@ struct WatchTrackpadView: View {
                 // Trackpad surface
                 Color.black.opacity(0.01)
                     .gesture(
-                        DragGesture(minimumDistance: 1, coordinateSpace: .local)
+                        DragGesture(minimumDistance: 0, coordinateSpace: .local)
                             .onChanged { value in
                                 if let last = lastDragLocation {
-                                    let dx = Float(value.location.x - last.x) * sensitivity
-                                    let dy = Float(value.location.y - last.y) * sensitivity
-                                    let command = ControlCommand(type: .mouseMove, deltaX: dx, deltaY: dy)
-                                    WatchSessionManager.shared.send(command: command)
+                                    let rawDX = Float(value.location.x - last.x)
+                                    let rawDY = Float(value.location.y - last.y)
+                                    let dx = accelerate(rawDX)
+                                    let dy = accelerate(rawDY)
+                                    if abs(dx) > 0.01 || abs(dy) > 0.01 {
+                                        let command = ControlCommand(type: .mouseMove, deltaX: dx, deltaY: dy)
+                                        WatchSessionManager.shared.send(command: command)
+                                    }
                                 }
                                 lastDragLocation = value.location
                             }
@@ -41,21 +43,17 @@ struct WatchTrackpadView: View {
                     )
 
                 // Visual overlay
-                VStack(spacing: 6) {
+                VStack(spacing: 4) {
                     Spacer()
-
                     Image(systemName: "hand.point.up.left.fill")
-                        .font(.system(size: 24))
-                        .foregroundColor(.white.opacity(0.3))
-
-                    Text("Arrastra para mover")
-                        .font(.system(size: 10))
-                        .foregroundColor(.white.opacity(0.3))
-
-                    Text("Tap = click · Crown = scroll")
+                        .font(.system(size: 20))
+                        .foregroundColor(.white.opacity(0.2))
+                    Text("Arrastra · Tap = click")
                         .font(.system(size: 9))
                         .foregroundColor(.white.opacity(0.2))
-
+                    Text("Crown = scroll")
+                        .font(.system(size: 9))
+                        .foregroundColor(.white.opacity(0.15))
                     Spacer()
                 }
             }
@@ -71,7 +69,7 @@ struct WatchTrackpadView: View {
             isContinuous: true,
             isHapticFeedbackEnabled: true
         )
-        .onChange(of: scrollValue) { oldValue, newValue in
+        .onChange(of: scrollValue) { _, newValue in
             let delta = Float(newValue - lastScrollValue)
             lastScrollValue = newValue
             if abs(delta) > 0.1 {
@@ -85,5 +83,15 @@ struct WatchTrackpadView: View {
         }
         .navigationTitle("Trackpad")
         .navigationBarTitleDisplayMode(.inline)
+    }
+
+    // Same smooth acceleration as iPhone
+    private func accelerate(_ delta: Float) -> Float {
+        let magnitude = abs(delta)
+        let base: Float = 1.5
+        let scale: Float = 0.2
+        let power: Float = 0.8
+        let multiplier = base + scale * pow(magnitude, power)
+        return delta * multiplier
     }
 }

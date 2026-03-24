@@ -21,7 +21,15 @@ struct PhoneContentView: View {
         .onAppear {
             macConnection.startBrowsing()
             phoneSession.onCommandReceived = { command in
-                macConnection.send(command: command)
+                // Route mouse/scroll through UDP for low latency
+                switch command.type {
+                case .mouseMove:
+                    macConnection.sendFast(type: 0, deltaX: command.deltaX ?? 0, deltaY: command.deltaY ?? 0)
+                case .scroll:
+                    macConnection.sendFast(type: 1, deltaX: 0, deltaY: command.deltaY ?? command.value)
+                default:
+                    macConnection.send(command: command)
+                }
             }
         }
     }
