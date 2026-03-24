@@ -4,26 +4,53 @@ import Foundation
 enum ControlType: String, Codable {
     case brightness
     case volume
+    case mouseMove
+    case mouseClick
+    case rightClick
+    case scroll
 }
 
 struct ControlCommand: Codable {
     let type: ControlType
-    let value: Float  // 0.0 ... 1.0
+    let value: Float
+    let deltaX: Float?
+    let deltaY: Float?
+
+    // Existing commands (brightness, volume, click)
+    init(type: ControlType, value: Float) {
+        self.type = type
+        self.value = value
+        self.deltaX = nil
+        self.deltaY = nil
+    }
+
+    // Mouse/scroll commands with deltas
+    init(type: ControlType, deltaX: Float, deltaY: Float) {
+        self.type = type
+        self.value = 0
+        self.deltaX = deltaX
+        self.deltaY = deltaY
+    }
 
     var dictionaryRepresentation: [String: Any] {
-        return [
+        var dict: [String: Any] = [
             "type": type.rawValue,
             "value": value
         ]
+        if let dx = deltaX { dict["deltaX"] = dx }
+        if let dy = deltaY { dict["deltaY"] = dy }
+        return dict
     }
 
     static func from(dictionary: [String: Any]) -> ControlCommand? {
         guard
             let typeRaw = dictionary["type"] as? String,
-            let type = ControlType(rawValue: typeRaw),
-            let value = dictionary["value"] as? Float
+            let type = ControlType(rawValue: typeRaw)
         else { return nil }
-        return ControlCommand(type: type, value: value)
+        let value = dictionary["value"] as? Float ?? 0
+        let deltaX = dictionary["deltaX"] as? Float
+        let deltaY = dictionary["deltaY"] as? Float
+        return ControlCommand(type: type, value: value, deltaX: deltaX, deltaY: deltaY)
     }
 }
 
