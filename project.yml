@@ -1,0 +1,90 @@
+name: WristControl
+options:
+  bundleIdPrefix: com.xaron.wristcontrol
+  deploymentTarget:
+    watchOS: "10.0"
+    iOS: "16.0"
+    macOS: "13.0"
+  xcodeVersion: "16.0"
+  generateEmptyDirectories: true
+
+settings:
+  base:
+    SWIFT_VERSION: "5.9"
+    MARKETING_VERSION: "1.0.0"
+    CURRENT_PROJECT_VERSION: 1
+
+targets:
+  WristControlPhone:
+    type: application
+    platform: iOS
+    sources:
+      - path: WristControlPhone
+      - path: Shared
+    info:
+      path: WristControlPhone/Info.plist
+      properties:
+        NSBonjourServices:
+          - _wristcontrol._tcp
+        NSLocalNetworkUsageDescription: "WristControl necesita acceso a la red local para conectarse a tu Mac."
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.xaron.wristcontrol.phone
+    dependencies:
+      - target: WristControlWatch
+        embed: true
+
+  WristControlWatch:
+    type: application
+    platform: watchOS
+    sources:
+      - path: WristControlWatch
+      - path: Shared
+    info:
+      path: WristControlWatch/Info.plist
+      properties:
+        WKApplication: true
+        WKCompanionAppBundleIdentifier: com.xaron.wristcontrol.phone
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.xaron.wristcontrol.phone.watchkitapp
+
+  WristControlMac:
+    type: application
+    platform: macOS
+    sources:
+      - path: WristControlMac
+      - path: Shared
+    info:
+      path: WristControlMac/Info.plist
+      properties:
+        NSBonjourServices:
+          - _wristcontrol._tcp
+        NSLocalNetworkUsageDescription: "WristControl necesita acceso a la red local para comunicarse con tu iPhone."
+        LSUIElement: true
+    entitlements:
+      path: WristControlMac/WristControlMac.entitlements
+      properties:
+        com.apple.security.app-sandbox: true
+        com.apple.security.network.client: true
+        com.apple.security.network.server: true
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.xaron.wristcontrol.mac
+    frameworks:
+      - CoreAudio
+      - AudioToolbox
+
+  SharedTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: SharedTests
+    dependencies:
+      - target: WristControlPhone
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.xaron.wristcontrol.sharedtests
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/WristControlPhone.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/WristControlPhone"
+        BUNDLE_LOADER: "$(TEST_HOST)"
+        GENERATE_INFOPLIST_FILE: YES
