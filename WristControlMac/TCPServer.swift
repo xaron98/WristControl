@@ -153,7 +153,9 @@ class TCPServer {
 
     private func handleCommand(_ command: ControlCommand, connection: NWConnection) {
         if command.value < 0 && (command.type == .brightness || command.type == .volume) {
-            sendCurrentStatus(to: connection)
+            DispatchQueue.main.async {
+                self.sendCurrentStatus(to: connection)
+            }
             return
         }
 
@@ -179,7 +181,7 @@ class TCPServer {
         }
     }
 
-    private func sendCurrentStatus(to connection: NWConnection) {
+    @MainActor private func sendCurrentStatus(to connection: NWConnection) {
         let status = StatusUpdate(
             brightness: BrightnessController.getBrightness(),
             volume: VolumeController.getVolume(),
