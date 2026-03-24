@@ -22,10 +22,13 @@ class ServerManager: ObservableObject {
         accessibilityGranted = trusted
 
         if !trusted {
-            // Open Accessibility settings directly
+            // Open Accessibility settings
             if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility") {
                 NSWorkspace.shared.open(url)
             }
+            // Reveal the app in Finder so user can drag it to the list
+            let appPath = Bundle.main.bundleURL
+            NSWorkspace.shared.activateFileViewerSelecting([appPath])
         }
     }
 }
