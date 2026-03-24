@@ -4,20 +4,29 @@ import Network
 
 class TCPServer {
     private var listener: NWListener?
+    private var udpListener: NWListener?
     private var connections: [NWConnection] = []
 
     private let serviceType = "_wristcontrol._tcp"
-    private let port: UInt16 = 9876
+    private let tcpPort: UInt16 = 9876
+    private let udpPort: UInt16 = 9877
     private let decoder = JSONDecoder()
 
     func start() {
+        startTCP()
+        startUDP()
+    }
+
+    // MARK: - TCP (brightness, volume, clicks, status)
+
+    private func startTCP() {
         do {
             let tcpOptions = NWProtocolTCP.Options()
-            tcpOptions.noDelay = true  // Disable Nagle's algorithm for low latency
+            tcpOptions.noDelay = true
             let parameters = NWParameters(tls: nil, tcp: tcpOptions)
             parameters.includePeerToPeer = true
 
-            listener = try NWListener(using: parameters, on: NWEndpoint.Port(rawValue: port)!)
+            listener = try NWListener(using: parameters, on: NWEndpoint.Port(rawValue: tcpPort)!)
 
             listener?.service = NWListener.Service(
                 name: Host.current().localizedName ?? "Mac",
@@ -32,9 +41,9 @@ class TCPServer {
                 guard let self = self else { return }
                 switch state {
                 case .ready:
-                    print("[WristControl] Server ready on port \(self.port)")
+                    print("[WristControl] TCP ready on port \(self.tcpPort)")
                 case .failed(let error):
-                    print("[WristControl] Server failed: \(error)")
+                    print("[WristControl] TCP failed: \(error)")
                 default:
                     break
                 }
@@ -42,9 +51,64 @@ class TCPServer {
 
             listener?.start(queue: .main)
         } catch {
-            print("[WristControl] Error creating listener: \(error)")
+            print("[WristControl] Error creating TCP listener: \(error)")
         }
     }
+
+    // MARK: - UDP (mouse movement, scroll — low latency)
+
+    private func startUDP() {
+        do {
+            let parameters = NWParameters.udp
+            parameters.includePeerToPeer = true
+
+            udpListener = try NWListener(using: parameters, on: NWEndpoint.Port(rawValue: udpPort)!)
+
+            udpListener?.newConnectionHandler = { [weak self] connection in
+                connection.start(queue: .global(qos: .userInteractive))
+                self?.receiveUDP(from: connection)
+            }
+
+            udpListener?.stateUpdateHandler = { [weak self] state in
+                guard let self = self else { return }
+                if case .ready = state {
+                    print("[WristControl] UDP ready on port \(self.udpPort)")
+                }
+            }
+
+            udpListener?.start(queue: .global(qos: .userInteractive))
+        } catch {
+            print("[WristControl] Error creating UDP listener: \(error)")
+        }
+    }
+
+    private func receiveUDP(from connection: NWConnection) {
+        connection.receiveMessage { [weak self] data, _, _, error in
+            guard let self = self else { return }
+
+            if let data = data, data.count == 9 {
+                // Binary format: [1 byte type] [4 bytes float deltaX] [4 bytes float deltaY]
+                let typeByte = data[0]
+                var dx: Float = 0
+                var dy: Float = 0
+                _ = withUnsafeMutableBytes(of: &dx) { data[1..<5].copyBytes(to: $0) }
+                _ = withUnsafeMutableBytes(of: &dy) { data[5..<9].copyBytes(to: $0) }
+
+                switch typeByte {
+                case 0: // mouseMove
+                    MouseController.moveMouse(deltaX: dx, deltaY: dy)
+                case 1: // scroll
+                    MouseController.scroll(deltaY: dy)
+                default:
+                    break
+                }
+            }
+
+            self.receiveUDP(from: connection)
+        }
+    }
+
+    // MARK: - TCP connection handling
 
     private func handleNewConnection(_ connection: NWConnection) {
         print("[WristControl] New connection from iPhone")
@@ -65,16 +129,13 @@ class TCPServer {
     }
 
     private func receiveData(from connection: NWConnection) {
-        // Read 4-byte length header
         connection.receive(minimumIncompleteLength: 4, maximumLength: 4) { [weak self] data, _, _, error in
             guard let self = self, let data = data, error == nil else { return }
 
-            // Safe aligned read of UInt32
             var length: UInt32 = 0
             _ = withUnsafeMutableBytes(of: &length) { data.copyBytes(to: $0) }
             length = UInt32(bigEndian: length)
 
-            // Read payload
             connection.receive(
                 minimumIncompleteLength: Int(length),
                 maximumLength: Int(length)
@@ -94,8 +155,6 @@ class TCPServer {
             return
         }
 
-        // Mouse/scroll: process immediately on background queue (low latency)
-        // Brightness/volume: dispatch to main for UI-related APIs
         switch command.type {
         case .mouseMove:
             MouseController.moveMouse(deltaX: command.deltaX ?? 0, deltaY: command.deltaY ?? 0)

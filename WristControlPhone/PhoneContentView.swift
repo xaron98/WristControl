@@ -133,7 +133,7 @@ private struct TrackpadTab: View {
             if macConnection.isConnected {
                 TrackpadView(
                     onMove: { dx, dy in
-                        macConnection.send(command: ControlCommand(type: .mouseMove, deltaX: dx, deltaY: dy))
+                        macConnection.sendFast(type: 0, deltaX: dx, deltaY: dy)
                     },
                     onClick: {
                         macConnection.send(command: ControlCommand(type: .mouseClick, value: 1))
@@ -142,7 +142,7 @@ private struct TrackpadTab: View {
                         macConnection.send(command: ControlCommand(type: .rightClick, value: 1))
                     },
                     onScroll: { dy in
-                        macConnection.send(command: ControlCommand(type: .scroll, deltaX: 0, deltaY: dy))
+                        macConnection.sendFast(type: 1, deltaX: 0, deltaY: dy)
                     }
                 )
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
