@@ -24,6 +24,14 @@ struct ControlCommand: Codable {
         self.deltaY = nil
     }
 
+    // Full init for dictionary deserialization
+    init(type: ControlType, value: Float, deltaX: Float?, deltaY: Float?) {
+        self.type = type
+        self.value = value
+        self.deltaX = deltaX
+        self.deltaY = deltaY
+    }
+
     // Mouse/scroll commands with deltas
     init(type: ControlType, deltaX: Float, deltaY: Float) {
         self.type = type

@@ -13,6 +13,7 @@
 		0CAB12A574246AC21EAF63AC /* WristControlPhoneApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C40C223C39DA65674ABCBF1 /* WristControlPhoneApp.swift */; };
 		158B2DECA6C042A9AB6A1B22 /* StatusRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0397019E132B52C2A8DAB528 /* StatusRow.swift */; };
 		29C57BF766D8423ECB63D12F /* MacConnectionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C04BD766716E7E01BC16A912 /* MacConnectionManager.swift */; };
+		2D8A57D27104A782CA771A77 /* ScrollCrownView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78787244CA99B8D5355B09AD /* ScrollCrownView.swift */; };
 		453B0EF694CD87AF7245F3B0 /* CommandProtocolTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A93AF3B01A3F0C42A1BDA2A8 /* CommandProtocolTests.swift */; };
 		60C299A5ACCB6A8D7090C34A /* WristControlWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E2E78A56472D1DC67BD9EE /* WristControlWatchApp.swift */; };
 		694FAB6CE823D773682AA94A /* WristControlWatch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = 3F13BB9F246930A2393A9A1E /* WristControlWatch.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -21,6 +22,8 @@
 		8C6425867A87AF28E7C16B7E /* TCPServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = E273BE61FD56FBCFE0D730E7 /* TCPServer.swift */; };
 		986CD2E4F9F0606CA56C1820 /* ControlButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EC674B2E73F4D19438417E0 /* ControlButton.swift */; };
 		A2870FE2A1006C6AACD13E49 /* BrightnessController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49A85F949E5306BADFC6CB87 /* BrightnessController.swift */; };
+		A37A021BEA239455905009AB /* TrackpadView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A1C310DF05A95D693203956 /* TrackpadView.swift */; };
+		A647B2103FF85E362E41369A /* MouseController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D5555A69A7F85F075D50B42 /* MouseController.swift */; };
 		BD83A8A842B270D2E55182AD /* WristControlMacApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67F48C9E1877E876972C907D /* WristControlMacApp.swift */; };
 		C3955868D890C666397A3806 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D0C92C8E352889A6DC175063 /* Assets.xcassets */; };
 		DB8BB5C9DE70D8B2A2F41932 /* PhoneContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B497FDBA7863EA275F4294F /* PhoneContentView.swift */; };
@@ -64,6 +67,7 @@
 
 /* Begin PBXFileReference section */
 		0397019E132B52C2A8DAB528 /* StatusRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusRow.swift; sourceTree = "<group>"; };
+		1A1C310DF05A95D693203956 /* TrackpadView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackpadView.swift; sourceTree = "<group>"; };
 		25DCC98F31E24DEA05888B11 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		2C40C223C39DA65674ABCBF1 /* WristControlPhoneApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WristControlPhoneApp.swift; sourceTree = "<group>"; };
 		37E2E78A56472D1DC67BD9EE /* WristControlWatchApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WristControlWatchApp.swift; sourceTree = "<group>"; };
@@ -75,7 +79,9 @@
 		5B497FDBA7863EA275F4294F /* PhoneContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhoneContentView.swift; sourceTree = "<group>"; };
 		67F48C9E1877E876972C907D /* WristControlMacApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WristControlMacApp.swift; sourceTree = "<group>"; };
 		69802CC37CF0D9468D8B9E32 /* WatchSessionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchSessionManager.swift; sourceTree = "<group>"; };
+		6D5555A69A7F85F075D50B42 /* MouseController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MouseController.swift; sourceTree = "<group>"; };
 		6EC674B2E73F4D19438417E0 /* ControlButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ControlButton.swift; sourceTree = "<group>"; };
+		78787244CA99B8D5355B09AD /* ScrollCrownView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScrollCrownView.swift; sourceTree = "<group>"; };
 		8D2143B5F9183E8B2968710A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		9B308979608E97993DAD25FB /* WristControlMac.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = WristControlMac.entitlements; sourceTree = "<group>"; };
 		A93AF3B01A3F0C42A1BDA2A8 /* CommandProtocolTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommandProtocolTests.swift; sourceTree = "<group>"; };
@@ -89,7 +95,7 @@
 		D14B2ED838E370D03500343B /* VolumeController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VolumeController.swift; sourceTree = "<group>"; };
 		E04F61A40493F961DCA43044 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		E273BE61FD56FBCFE0D730E7 /* TCPServer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TCPServer.swift; sourceTree = "<group>"; };
-		ECA510AD9ED7FD05331B8A8D /* WristControlPhone.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WristControlPhone.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		ECA510AD9ED7FD05331B8A8D /* WristControlPhone.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = WristControlPhone.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -110,6 +116,7 @@
 				5B497FDBA7863EA275F4294F /* PhoneContentView.swift */,
 				3F70E3246792A35830FCC416 /* PhoneSessionManager.swift */,
 				0397019E132B52C2A8DAB528 /* StatusRow.swift */,
+				1A1C310DF05A95D693203956 /* TrackpadView.swift */,
 				2C40C223C39DA65674ABCBF1 /* WristControlPhoneApp.swift */,
 			);
 			path = WristControlPhone;
@@ -122,6 +129,7 @@
 				B901073FF6B72ABE78043A9B /* ContentView.swift */,
 				6EC674B2E73F4D19438417E0 /* ControlButton.swift */,
 				56FC21374833D722581BD3B2 /* Info.plist */,
+				78787244CA99B8D5355B09AD /* ScrollCrownView.swift */,
 				BE4AE50CD24A7687D1EC51CE /* SliderView.swift */,
 				69802CC37CF0D9468D8B9E32 /* WatchSessionManager.swift */,
 				37E2E78A56472D1DC67BD9EE /* WristControlWatchApp.swift */,
@@ -135,6 +143,7 @@
 				25DCC98F31E24DEA05888B11 /* Assets.xcassets */,
 				49A85F949E5306BADFC6CB87 /* BrightnessController.swift */,
 				BDB470C2443ADED90E1A8309 /* Info.plist */,
+				6D5555A69A7F85F075D50B42 /* MouseController.swift */,
 				E273BE61FD56FBCFE0D730E7 /* TCPServer.swift */,
 				D14B2ED838E370D03500343B /* VolumeController.swift */,
 				9B308979608E97993DAD25FB /* WristControlMac.entitlements */,
@@ -259,6 +268,8 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1600;
+				TargetAttributes = {
+				};
 			};
 			buildConfigurationList = 607C94B1D713A0DCBA60DCE6 /* Build configuration list for PBXProject "WristControl" */;
 			developmentRegion = en;
@@ -319,6 +330,7 @@
 				DB8BB5C9DE70D8B2A2F41932 /* PhoneContentView.swift in Sources */,
 				EA77BF85F6BACF70FF068A67 /* PhoneSessionManager.swift in Sources */,
 				158B2DECA6C042A9AB6A1B22 /* StatusRow.swift in Sources */,
+				A37A021BEA239455905009AB /* TrackpadView.swift in Sources */,
 				0CAB12A574246AC21EAF63AC /* WristControlPhoneApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -329,6 +341,7 @@
 			files = (
 				A2870FE2A1006C6AACD13E49 /* BrightnessController.swift in Sources */,
 				DC68B94BF109053B52F645EA /* CommandProtocol.swift in Sources */,
+				A647B2103FF85E362E41369A /* MouseController.swift in Sources */,
 				8C6425867A87AF28E7C16B7E /* TCPServer.swift in Sources */,
 				074B7444355D213217C38F8A /* VolumeController.swift in Sources */,
 				BD83A8A842B270D2E55182AD /* WristControlMacApp.swift in Sources */,
@@ -350,6 +363,7 @@
 				0AA35599422B2F11C73DE32A /* CommandProtocol.swift in Sources */,
 				F672CDAA0499F21D5AEABB85 /* ContentView.swift in Sources */,
 				986CD2E4F9F0606CA56C1820 /* ControlButton.swift in Sources */,
+				2D8A57D27104A782CA771A77 /* ScrollCrownView.swift in Sources */,
 				F30B3C6B5E36A220784CB239 /* SliderView.swift in Sources */,
 				7816F374DE4DD71646921ABB /* WatchSessionManager.swift in Sources */,
 				60C299A5ACCB6A8D7090C34A /* WristControlWatchApp.swift in Sources */,
@@ -435,16 +449,13 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = R29D2W5992;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
 				INFOPLIST_FILE = WristControlPhone/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.xaron.wristcontrol.phone;
-				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -455,17 +466,13 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = WristControlMac/WristControlMac.entitlements;
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				DEVELOPMENT_TEAM = R29D2W5992;
 				INFOPLIST_FILE = WristControlMac/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.xaron.wristcontrol.mac;
-				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = macosx;
 			};
 			name = Release;
@@ -491,7 +498,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				DEVELOPMENT_TEAM = R29D2W5992;
 				INFOPLIST_FILE = WristControlWatch/Info.plist;
 				PRODUCT_BUNDLE_IDENTIFIER = com.xaron.wristcontrol.phone.watchkitapp;
 				SDKROOT = watchos;
@@ -505,17 +511,13 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = WristControlMac/WristControlMac.entitlements;
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				DEVELOPMENT_TEAM = R29D2W5992;
 				INFOPLIST_FILE = WristControlMac/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.xaron.wristcontrol.mac;
-				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = macosx;
 			};
 			name = Debug;
@@ -524,7 +526,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				DEVELOPMENT_TEAM = R29D2W5992;
 				INFOPLIST_FILE = WristControlWatch/Info.plist;
 				PRODUCT_BUNDLE_IDENTIFIER = com.xaron.wristcontrol.phone.watchkitapp;
 				SDKROOT = watchos;
@@ -620,16 +621,13 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = R29D2W5992;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
 				INFOPLIST_FILE = WristControlPhone/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.xaron.wristcontrol.phone;
-				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};

@@ -69,7 +69,7 @@ struct ContentView: View {
                     let command = ControlCommand(type: .scroll, deltaX: 0, deltaY: delta)
                     WatchSessionManager.shared.send(command: command)
                 }
-                .transition(.move(edge: .bottom).combined(with: .opacity))
+                .transition(AnyTransition.move(edge: .bottom).combined(with: AnyTransition.opacity))
             } else if activeControl != .none {
                 SliderView(
                     value: activeValue,
@@ -78,7 +78,7 @@ struct ContentView: View {
                         sendCommand(value: Float(newValue))
                     }
                 )
-                .transition(.move(edge: .bottom).combined(with: .opacity))
+                .transition(AnyTransition.move(edge: .bottom).combined(with: AnyTransition.opacity))
             }
         }
         .onAppear {
